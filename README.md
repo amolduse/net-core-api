@@ -139,3 +139,16 @@ To run the unit tests, navigate to the root directory of the solution and run th
 ```bash
 dotnet test
 ```
+
+## Renaming the Project
+
+This project can be used as a boilerplate. To rename the project and all its namespaces, you can use the `rename-project.sh` script.
+
+1.  Open a terminal in the root directory of the project.
+2.  Run the script:
+    ```bash
+    ./rename-project.sh
+    ```
+3.  When prompted, enter the new name for your project (e.g., `MyAwesomeApi`).
+4.  The script will handle renaming the solution, projects, directories, and namespaces.
+5.  After the script finishes, it's a good idea to do a manual check and then rebuild the solution.
