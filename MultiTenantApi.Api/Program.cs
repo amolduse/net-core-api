@@ -1,5 +1,4 @@
 using Amazon.SecretsManager;
-using Honeycomb.OpenTelemetry;
 using Microsoft.OpenApi.Models;
 using MultiTenantApi.Api.Middleware;
 using MultiTenantApi.Application.Categories.Interfaces;
@@ -13,6 +12,7 @@ using MultiTenantApi.Infrastructure.Data;
 using MultiTenantApi.Infrastructure.Products;
 using MultiTenantApi.Infrastructure.Secrets;
 using MultiTenantApi.Infrastructure.Tenants;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,16 +28,24 @@ builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddControllers();
 
-// Add Honeycomb OpenTelemetry
-builder.Services.AddOpenTelemetry().WithTracing(otelBuilder =>
+// Add OpenTelemetry
+builder.Services.AddOpenTelemetry().WithTracing(tracerProviderBuilder =>
 {
-    otelBuilder
-        .AddHoneycomb(builder.Configuration.GetSection("Honeycomb").Get<HoneycombOptions>())
+    var resourceBuilder = ResourceBuilder.CreateDefault()
+        .AddService(builder.Configuration.GetValue<string>("Otlp:ServiceName"));
+
+    tracerProviderBuilder
+        .SetResourceBuilder(resourceBuilder)
         .AddAspNetCoreInstrumentation()
         .AddSqlClientInstrumentation(options =>
         {
             options.SetDbStatementForText = true;
             options.RecordException = true;
+        })
+        .AddOtlpExporter(otlpOptions =>
+        {
+            otlpOptions.Endpoint = new Uri(builder.Configuration.GetValue<string>("Otlp:Endpoint"));
+            otlpOptions.Headers = builder.Configuration.GetValue<string>("Otlp:Headers");
         });
 });
 
