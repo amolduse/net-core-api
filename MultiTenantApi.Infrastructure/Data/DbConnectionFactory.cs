@@ -38,7 +38,19 @@ public class DbConnectionFactory : IDbConnectionFactory
         switch (databaseType)
         {
             case DatabaseType.Config:
-                connectionString = _configuration.GetConnectionString("ConfigDb");
+                var configDbServer = _configuration["Database:ConfigDbServer"];
+                if (string.IsNullOrEmpty(configDbServer))
+                {
+                    throw new InvalidOperationException("Database:ConfigDbServer is not configured.");
+                }
+                connectionString = new SqlConnectionStringBuilder
+                {
+                    DataSource = configDbServer,
+                    InitialCatalog = "CONFIGDB", // Assuming a fixed name for the config DB
+                    UserID = credentials.Username,
+                    Password = credentials.Password,
+                    TrustServerCertificate = true // Recommended for local dev/testing
+                }.ConnectionString;
                 break;
             case DatabaseType.Shared:
                 var sharedDbServer = _configuration["Database:SharedDbServer"];
