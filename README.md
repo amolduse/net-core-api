@@ -11,6 +11,42 @@ The solution is divided into four projects, following the principles of Clean Ar
 -   `MultiTenantApi.Infrastructure`: Contains the implementations for data access (repositories), external services (AWS, Honeycomb), and other infrastructure concerns.
 -   `MultiTenantApi.Api`: The main Web API project, which contains the controllers, middleware, and startup configuration.
 
+## Architecture
+
+The following diagram illustrates the project architecture and the dependencies between the projects:
+
+```mermaid
+graph TD
+    subgraph "Api Layer"
+        Api[MultiTenantApi.Api]
+    end
+
+    subgraph "Application Layer"
+        Application[MultiTenantApi.Application]
+    end
+
+    subgraph "Domain Layer"
+        Domain[MultiTenantApi.Domain]
+    end
+
+    subgraph "Infrastructure Layer"
+        Infrastructure[MultiTenantApi.Infrastructure]
+    end
+
+    subgraph "Test Layer"
+        Tests[MultiTenantApi.Tests]
+    end
+
+    Api --> Application
+    Api --> Infrastructure
+    Infrastructure --> Application
+    Application --> Domain
+    Tests --> Api
+    Tests --> Application
+    Tests --> Domain
+    Tests --> Infrastructure
+```
+
 ### Key Features
 
 -   **Multi-Tenancy**: The API resolves the tenant based on the `X-Tenant-Id` header.
